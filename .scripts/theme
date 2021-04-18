@@ -81,7 +81,8 @@ def current_theme():
 
 
 def rgb2hex(t):
-    return "#"+"".join(tuple(map(lambda n: hex(n)[2:].rjust(2, "0")[-2:], t)))
+    out = "#" + "".join(tuple(map(lambda n: hex(n)[2:].rjust(2, "0")[-2:], t)))
+    return out
 
 
 def hex2rgb(s):
@@ -143,12 +144,13 @@ def wallcolor(colortype):
     elif colortype == "gray":
         set_wallcolor(colors["colors"]["color8"])
     else:
-        colors = list(colors["special"].values()) + list(colors["colors"].values())
+        colors = list(colors["special"].values()) \
+               + list(colors["colors"].values())
         set_wallcolor(random.choice(colors))
 
 
 def color_theme(theme_type):
-    all_themes = themepath.rglob(f"*/*.json")
+    all_themes = themepath.rglob("*/*.json")
     possible_themes = []
     for t in all_themes:
         relevant_path = t.relative_to(themepath)
@@ -189,30 +191,28 @@ def get_info(arg):
     elif arg == "dirs":
         os.system("ls --color=auto ~/.config/wal/colorschemes")
 
-    backend = random.choice(["wal", "haishoku", "colorthief", "colorz"])
+    # backend = random.choice(["wal", "haishoku", "colorthief", "colorz"])
 
 
 def wall_theme(
-    wall_type="random", wall_name="random", brightness="dark", backend="colorz"
+    wall_name="random", brightness="dark", backend="colorz"
 ):
 
     brightness = brightness in ["light", "l", "bright"]
 
-    if wall_type == "random":
-        possible_types = [
-            p for p in wallpath.iterdir() if p.is_dir() and list(p.iterdir())
-        ]
-        wall_type = pickatrandom(possible_types).name
     if wall_name == "random":
-        possible_walls = (wallpath / wall_type).iterdir()
+        possible_walls = wallpath.iterdir()
         wall_name = pickatrandom(possible_walls).name
 
-    wall = pickatrandom((wallpath / wall_type).rglob(f"{wall_name}*"))
+    if ".jpg" in wall_name:
+        wall_name = wall_name[:4]
+
+    wall = pickatrandom(wallpath.rglob(f"{wall_name}*"))
 
     wall_colors = wal.colors.get(str(wall), brightness, backend)
     apply_theme(wall_colors, wallpaper=wall)
 
-    log("theme set: {} from {}".format(wall.stem, wall_type))
+    log(f"theme set: {wall} ")
 
 
 def print_help():
